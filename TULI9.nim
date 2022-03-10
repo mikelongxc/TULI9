@@ -7,7 +7,7 @@ type
 
    AppC = ref object of ExprC
       fun: ExprC
-      args: array
+      args: seq[ExprC]
 
    CondC = ref object of ExprC
       ifCond: ExprC
@@ -15,7 +15,7 @@ type
       elseCond: ExprC
 
    LamC = ref object of ExprC
-      parms: array
+      parms: seq[string]
       body: ExprC
 
 # Typedef for a Value
@@ -42,12 +42,13 @@ type
       val: Value
 
    CloV = ref object of Value
-      parms: array
+      parms: seq[string]
       body: ExprC
       env: Env
 
 # Let's create our top-env here
 let top_env = Env(next: nil, name: "+", val: nil)
+
 
 # Lookup function utilizing our Env
 proc lookup(env : Env, sym : string) : Value =
@@ -57,6 +58,15 @@ proc lookup(env : Env, sym : string) : Value =
       lookup(env.next, sym)
    else:
       return nil
+
+proc extend(env : Env, syms : seq[string], vals : seq[Value]) : Env =
+   if syms[0] == "":
+      return env
+   elif vals[0] == nil:
+      return env
+   else:
+      let newEnv = Env(next: env, name: syms[0], val: vals[0])
+      return extend(newEnv, syms[1..^1], vals[1..^1])
 
 # Beginning of the interp function
 proc interp(exp : ExprC, env : Env = top_env) : Value =
@@ -80,3 +90,6 @@ assert(BoolV(lookup(testEnv1, "hello")).b)
 assert(lookup(testEnv1, "nonexistant") == nil)
 let testEnv2 = Env(next: testEnv1, name: "world", val: NumV(num : 5))
 assert(BoolV(lookup(testEnv2, "hello")).b)
+let testEnv3 = Env(next: testEnv2, name: "bin", val: StrV(str : "tester"))
+assert(NumV(lookup(testEnv3, "world")).num == 5)
+assert(StrV(lookup(testEnv3, "bin")).str == "tester")
