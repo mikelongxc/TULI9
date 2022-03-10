@@ -14,7 +14,7 @@ type
    StrV = ref object of Value
       str: string
    BoolV = ref object of Value
-      v: bool
+      b: bool
    CloV = ref object of Value
       parms: array
       body: ExprC
@@ -33,4 +33,7 @@ proc interp(exp : ExprC) : Value =
       return StrV(exp)
 
 # Test Cases
-assert(NumV(interp(NumV(n: 5))).n == 5)
+assert(NumV(interp(NumV(num: 5))).num == 5)
+assert(BoolV(interp(Boolv(b: true))).b)
+assert(not BoolV(interp(Boolv(b: false))).b)
+assert(StrV(interp(StrV(str: "Hello World"))).str == "Hello World")
