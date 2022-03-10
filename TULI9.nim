@@ -1,12 +1,25 @@
-# Struct for a NumV
+# Typedef for a Value
 type
-   NumV* = object
+   Value = ref object of RootObj
+      name: string
+
+   NumV = ref object of Value
       num: int
 
-# Beginning of the interp function
-proc interp(exp: int) : NumV =
-   case exp
-      of 5: return NumV(num: exp)
-      else: echo "Not a valid type!"
+type
+   ExprC = ref object of RootObj
+      name: string
 
-echo interp(5)
+   NumC = ref object of ExprC
+      num: int
+   StrC = ref object of ExprC
+      num: string
+   IdC = ref object of ExprC
+      num: string
+
+# Beginning of the interp function
+proc interp(exp : Value) =
+   if exp of NumV:
+      echo "NumV"
+
+interp(NumV(num: 5))
