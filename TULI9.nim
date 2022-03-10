@@ -2,6 +2,22 @@
 type
    ExprC = ref object of RootObj
 
+   IdC = ref object of ExprC
+      sym: string
+
+   AppC = ref object of ExprC
+      fun: ExprC
+      args: array
+
+   CondC = ref object of ExprC
+      ifCond: ExprC
+      thenCond: ExprC
+      elseCond: ExprC
+
+   LamC = ref object of ExprC
+      parms: array
+      body: ExprC
+
 type
    Env = ref object of RootObj
 
@@ -11,20 +27,24 @@ type
    
    NumV = ref object of Value
       num: int
+
    StrV = ref object of Value
       str: string
+
    BoolV = ref object of Value
       b: bool
+
    CloV = ref object of Value
       parms: array
       body: ExprC
       env: Env
+
    PrimV = ref object of Value
       op: proc
 
 
 # Beginning of the interp function
-proc interp(exp : ExprC) : Value =
+proc interp(exp : ExprC, env : Env = Env()) : Value =
    if exp of NumV:
       return NumV(exp)
    elif exp of BoolV:
