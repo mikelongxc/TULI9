@@ -113,6 +113,9 @@ proc interp(exp : ExprC, env : Env = top_env) : Value =
       return lookup(env, IdC(exp).sym)
    elif exp of AppC:
       return interpApp(AppC(exp).fun, AppC(exp).args, env)
+   elif exp of CondC:
+      let tempExp = CondC(exp)
+      return interpCond(tempExp.ifCond, tempExp.thenCond, tempExp.elseCond, env)
 
 
 # Interp Test Cases
@@ -129,6 +132,15 @@ echo (interpApp(app0.fun, app0.args, top_env) == nil)
 
 # (NumV)interp(app0, top_env).num == 3
 
+# InterpCond Test Cases
+let testIfTrue = BoolV(b: true)
+let testIfFalse = BoolV(b: false)
+let testThen = NumV(num: 1)
+let testElse = NumV(num: 2)
+assert(NumV(interpCond(testIfTrue, testThen, testElse, top_env)).num == 1)
+assert(NumV(interpCond(testIfFalse, testThen, testElse, top_env)).num == 2)
+let testCond = CondC(ifCond: testIfTrue, thenCond: testThen, elseCond: testElse)
+assert(NumV(interpCond(testIfTrue, testCond, testElse, top_env)).num == 1)
 
 # Env Extend Test Cases
 let testSyms = @["a", "b", "c"]
