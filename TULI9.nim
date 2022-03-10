@@ -60,9 +60,9 @@ proc lookup(env : Env, sym : string) : Value =
       return nil
 
 proc extend(env : Env, syms : seq[string], vals : seq[Value]) : Env =
-   if syms[0] == "":
+   if syms.high == -1:
       return env
-   elif vals[0] == nil:
+   elif vals.high == -1:
       return env
    else:
       let newEnv = Env(next: env, name: syms[0], val: vals[0])
@@ -83,6 +83,11 @@ proc interp(exp : ExprC, env : Env = top_env) : Value =
 assert(NumV(interp(NumV(num: 5))).num == 5)
 assert(BoolV(interp(Boolv(b: true))).b)
 assert(not BoolV(interp(Boolv(b: false))).b)
+
+# Env Extend Test Cases
+let testSyms = @["a", "b", "c"]
+let testVals = @[NumV(num: 1), BoolV(b: true), NumV(num: 3)]
+let extendedEnv = extend(Env(next: nil, name: "root", val: StrV(str: "Begin")), testSyms, testVals)
 
 # Env Lookup Test Cases
 let testEnv1 = Env(next: nil, name: "hello", val: BoolV(b : true))
