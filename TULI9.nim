@@ -50,7 +50,18 @@ proc interp(exp : ExprC, env : Env = Env()) : Value =
    elif exp of BoolV:
       return BoolV(exp)
 
-# Test Cases
+# Lookup function utilizing our Env
+proc lookup(env : Env, sym : string) : Value =
+   if env.name == sym:
+      return env.val
+   else:
+      lookup(env.next, sym)
+
+# Interp Test Cases
 assert(NumV(interp(NumV(num: 5))).num == 5)
 assert(BoolV(interp(Boolv(b: true))).b)
 assert(not BoolV(interp(Boolv(b: false))).b)
+
+# Env Lookup Test Cases
+let testEnv1 = Env(next: nil, name: "hello", val: BoolV(b : true))
+assert(BoolV(lookup(testEnv1, "hello")).b)
