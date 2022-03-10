@@ -18,13 +18,6 @@ type
       parms: array
       body: ExprC
 
-# Typedef for a Environment
-type
-   Env = ref object of RootObj
-      next: Env
-      name: string
-      val: Value
-
 
 # Typedef for a Value
 type
@@ -33,20 +26,39 @@ type
    NumV = ref object of Value
       num: int
 
+   StrV = ref object of Value
+      str: string
+
    BoolV = ref object of Value
       b: bool
 
    PrimV = ref object of Value
       op: proc
 
+
+   NullV = ref object of Value
+
+
+
+# Typedef for a Environment (and CloV)
+type
+   Env = ref object of RootObj
+      next: Env
+      name: string
+      val: Value
+
    CloV = ref object of Value
       parms: array
       body: ExprC
       env: Env
 
-   NullV = ref object of Value
 
-
+# Lookup function utilizing our Env
+proc lookup(env : Env, sym : IdC) : Value =
+   if env.name == sym.sym:
+      return env.val
+   else:
+      lookup(env.next, sym)
 
 
 # Beginning of the interp function
@@ -58,7 +70,7 @@ proc interp(exp : ExprC, env : Env) : Value =
    elif exp of StrV:
       return StrV(exp)
    elif exp of IdC:
-      return LookupEnv(env, IdC(exp))
+      return NullV() #lookup(env, IdC(exp))
    elif exp of AppC:
       return NullV()
    elif exp of CondC:
@@ -66,18 +78,16 @@ proc interp(exp : ExprC, env : Env) : Value =
    elif exp of LamC:
       return NullV()
 
-# Lookup function utilizing our Env
-proc lookup(env : Env, sym : string) : Value =
-   if env.name == sym:
-      return env.val
-   else:
-      lookup(env.next, sym)
 
+var topEnv: Env
+topEnv = Env(next: nil, name: "hello", val: BoolV(b : true))
+#[
 # Interp Test Cases
-assert(NumV(interp(NumV(num: 5))).num == 5)
-assert(BoolV(interp(Boolv(b: true))).b)
-assert(not BoolV(interp(Boolv(b: false))).b)
+assert(NumV(interp(NumV(num: 5), topEnv)).num == 5)
+assert(BoolV(interp(Boolv(b: true), topEnv)).b)
+assert(not BoolV(interp(Boolv(b: false), topEnv)).b)
+]#
 
 # Env Lookup Test Cases
 let testEnv1 = Env(next: nil, name: "hello", val: BoolV(b : true))
-assert(BoolV(lookup(testEnv1, "hello")).b)
+assert(BoolV(lookup(testEnv1, IdC(sym: "hello"))).b)
