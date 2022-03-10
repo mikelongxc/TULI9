@@ -18,6 +18,14 @@ type
       parms: array
       body: ExprC
 
+# Typedef for a Environment
+type
+   Env = ref object of RootObj
+      next: Env
+      name: string
+      val: Value
+
+
 # Typedef for a Value
 type
    Value = ref object of ExprC
@@ -34,24 +42,32 @@ type
    PrimV = ref object of Value
       op: proc
 
-type
-   Env = ref object of RootObj
-      next: Env
-      name: string
-      val: Value
-
    CloV = ref object of Value
       parms: array
       body: ExprC
       env: Env
 
+   NullV = ref object of Value
+
+
+
 
 # Beginning of the interp function
-proc interp(exp : ExprC, env : Env = Env()) : Value =
+proc interp(exp : ExprC, env : Env) : Value =
    if exp of NumV:
       return NumV(exp)
    elif exp of BoolV:
       return BoolV(exp)
+   elif exp of StrV:
+      return StrV(exp)
+   elif exp of IdC:
+      return LookupEnv(env, IdC(exp))
+   elif exp of AppC:
+      return NullV()
+   elif exp of CondC:
+      return NullV()
+   elif exp of LamC:
+      return NullV()
 
 # Lookup function utilizing our Env
 proc lookup(env : Env, sym : string) : Value =
