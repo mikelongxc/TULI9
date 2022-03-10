@@ -2,18 +2,26 @@
 type
    ExprC = ref object of RootObj
 
+type
+   Env = ref object of RootObj
+
 # Typedef for a Value
 type
    Value = ref object of ExprC
-
+   
    NumV = ref object of Value
-      n: int
-
-   BoolV = ref object of Value
-      b: bool
-
+      num: int
    StrV = ref object of Value
-      s: string
+      str: string
+   BoolV = ref object of Value
+      v: bool
+   CloV = ref object of Value
+      parms: array
+      body: ExprC
+      env: Env
+   PrimV = ref object of Value
+      op: proc
+
 
 # Beginning of the interp function
 proc interp(exp : ExprC) : Value =
