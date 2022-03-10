@@ -4,7 +4,7 @@ type
       num: int
 
 # Beginning of the interp function
-proc interp(exp: int) =
-   echo exp
+proc interp(exp: int) : NumV =
+   NumV(num: exp)
 
-interp(5)
+echo interp(5)
