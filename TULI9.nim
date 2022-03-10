@@ -37,7 +37,7 @@ type
       str: string
 
    PrimV = ref object of Value
-      op: (seq[Value]) -> Value
+      op: (Value, Value) -> int
 
 # Typedef for a Environment
 type
@@ -51,8 +51,15 @@ type
       body: ExprC
       env: Env
 
+
+proc plusC(l : Value, r : Value) : int =
+   return  NumV(l).num + NumV(r).num
+
 # Let's create our top-env here
 let top_env = Env(next: nil, name: "+", val: NumV(num: 0))
+
+# Let's create our top-env here
+let top_env_plus = Env(next: nil, name: "+", val: PrimV(op: plusC))
 
 #[ Function Definitions ]#
 proc interp(exp : ExprC, env : Env = top_env) : Value
@@ -85,9 +92,9 @@ proc interpApp(body : ExprC, args : seq[ExprC], env : Env) : Value =
    interpretedBody = interp(body, env)
 
    if interpretedBody of PrimV:
-      var fnBody: (seq[Value]) -> Value
+      var fnBody: (Value, Value) -> int
       fnBody = PrimV(interpretedBody).op
-      return fnBody(interpretedArgs)
+      return NumV(num :fnBody(interpretedArgs[0], interpretedArgs[1]))
 
 # Interprets a CondC
 proc interpCond(ifCond : ExprC, thenCond : ExprC, elseCond : ExprC, env : Env) : Value =
@@ -119,19 +126,24 @@ proc interp(exp : ExprC, env : Env = top_env) : Value =
       return interpCond(tempExp.ifCond, tempExp.thenCond, tempExp.elseCond, env)
 
 
-# Interp Test Cases
+# Simple Interp Test Cases
 assert(NumV(interp(NumV(num: 5))).num == 5)
 assert(BoolV(interp(Boolv(b: true))).b)
 assert(not BoolV(interp(Boolv(b: false))).b)
 
+
+
+
+
+# Builtin test cases
+assert(plusC(NumV(num: 1), NumV(num: 2)) == 3)
+assert(plusC(NumV(num: 1), NumV(num: -1)) == 0)
+
 # (AppC (IdC '+) (list (NumV 1) (NumV 2)))
-
-var args0: seq[NumV]
-args0 = @[NumV(num: 1), NumV(num: 2)]
+# Interp AppC Test Case (simple PrimV)
 let app0 = AppC(fun: IdC(sym: "+"), args: @[(ExprC)NumV(num: 1),(ExprC)NumV(num: 2)])
-assert(interpApp(app0.fun, app0.args, top_env) == nil)
+assert(NumV(interpApp(app0.fun, app0.args, top_env_plus)).num == 3)
 
-# (NumV)interp(app0, top_env).num == 3
 
 # InterpCond Test Cases
 let testIfTrue = BoolV(b: true)
@@ -143,7 +155,6 @@ assert(NumV(interpCond(testIfFalse, testThen, testElse, top_env)).num == 2)
 
 let testCond = CondC(ifCond: testIfTrue, thenCond: testThen, elseCond: testElse)
 assert(NumV(interpCond(testIfTrue, testCond, testElse, top_env)).num == 1)
-
 let testCond2 = CondC(ifCond: testIfFalse, thenCond: testThen, elseCond: testIfTrue)
 let testCond3 = CondC(ifCond: testCond2, thenCond: testCond2, elseCond: testCond)
 assert(BoolV(interpCond(testCond3, testCond2, testCond, top_env)).b == true)
