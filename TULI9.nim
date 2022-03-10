@@ -112,7 +112,8 @@ proc interp(exp : ExprC, env : Env = top_env) : Value =
    elif exp of IdC:
       return lookup(env, IdC(exp).sym)
    elif exp of AppC:
-      return interpApp(AppC(exp).fun, AppC(exp).args, env)
+      let tempExp = AppC(exp)
+      return interpApp(tempExp.fun, tempExp.args, env)
    elif exp of CondC:
       let tempExp = CondC(exp)
       return interpCond(tempExp.ifCond, tempExp.thenCond, tempExp.elseCond, env)
@@ -128,7 +129,7 @@ assert(not BoolV(interp(Boolv(b: false))).b)
 var args0: seq[NumV]
 args0 = @[NumV(num: 1), NumV(num: 2)]
 let app0 = AppC(fun: IdC(sym: "+"), args: @[(ExprC)NumV(num: 1),(ExprC)NumV(num: 2)])
-echo (interpApp(app0.fun, app0.args, top_env) == nil)
+assert(interpApp(app0.fun, app0.args, top_env) == nil)
 
 # (NumV)interp(app0, top_env).num == 3
 
@@ -139,8 +140,13 @@ let testThen = NumV(num: 1)
 let testElse = NumV(num: 2)
 assert(NumV(interpCond(testIfTrue, testThen, testElse, top_env)).num == 1)
 assert(NumV(interpCond(testIfFalse, testThen, testElse, top_env)).num == 2)
+
 let testCond = CondC(ifCond: testIfTrue, thenCond: testThen, elseCond: testElse)
 assert(NumV(interpCond(testIfTrue, testCond, testElse, top_env)).num == 1)
+
+let testCond2 = CondC(ifCond: testIfFalse, thenCond: testThen, elseCond: testIfTrue)
+let testCond3 = CondC(ifCond: testCond2, thenCond: testCond2, elseCond: testCond)
+assert(BoolV(interpCond(testCond3, testCond2, testCond, top_env)).b == true)
 
 # Env Extend Test Cases
 let testSyms = @["a", "b", "c"]
