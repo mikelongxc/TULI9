@@ -44,11 +44,21 @@ type
 
 
 # Beginning of the interp function
-proc interp(exp : ExprC, env : Env = Env()) : Value =
+proc interp(exp : ExprC, env : Env) : Value =
    if exp of NumV:
       return NumV(exp)
    elif exp of BoolV:
       return BoolV(exp)
+   elif exp of StrV:
+      return StrV(exp)
+   elif exp of IdC:
+      return LookupEnv(env, IdC(exp))
+   elif exp of AppC:
+      return NullV()
+   elif exp of CondC:
+      return NullV()
+   elif exp of LamC:
+      return NullV()
 
 # Lookup function utilizing our Env
 proc lookup(env : Env, sym : string) : Value =
