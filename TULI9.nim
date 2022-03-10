@@ -28,6 +28,9 @@ type
    BoolV = ref object of Value
       b: bool
 
+   StrV = ref object of Value
+      str: string
+
    PrimV = ref object of Value
       op: proc
 
@@ -54,8 +57,10 @@ proc interp(exp : ExprC, env : Env = Env()) : Value =
 proc lookup(env : Env, sym : string) : Value =
    if env.name == sym:
       return env.val
-   else:
+   elif env.next != nil:
       lookup(env.next, sym)
+   else:
+      return nil
 
 # Interp Test Cases
 assert(NumV(interp(NumV(num: 5))).num == 5)
@@ -65,3 +70,4 @@ assert(not BoolV(interp(Boolv(b: false))).b)
 # Env Lookup Test Cases
 let testEnv1 = Env(next: nil, name: "hello", val: BoolV(b : true))
 assert(BoolV(lookup(testEnv1, "hello")).b)
+assert(lookup(testEnv1, "nonexistant") == nil)
