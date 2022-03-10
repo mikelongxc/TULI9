@@ -18,6 +18,14 @@ type
       parms: array
       body: ExprC
 
+# Typedef for a Environment
+type
+   Env = ref object of RootObj
+      next: Env
+      name: string
+      val: Value
+
+
 # Typedef for a Value
 type
    Value = ref object of ExprC
@@ -31,16 +39,14 @@ type
    PrimV = ref object of Value
       op: proc
 
-type
-   Env = ref object of RootObj
-      next: Env
-      name: string
-      val: Value
-
    CloV = ref object of Value
       parms: array
       body: ExprC
       env: Env
+
+   NullV = ref object of Value
+
+
 
 
 # Beginning of the interp function
