@@ -52,7 +52,7 @@ type
       env: Env
 
 # Let's create our top-env here
-let top_env = Env(next: nil, name: "+", val: nil)
+let top_env = Env(next: nil, name: "+", val: NumV(num: 0))
 
 #[ Function Definitions ]#
 proc interp(exp : ExprC, env : Env = top_env) : Value
@@ -89,6 +89,17 @@ proc interpApp(body : ExprC, args : seq[ExprC], env : Env) : Value =
       fnBody = PrimV(interpretedBody).op
       return fnBody(interpretedArgs)
 
+# Interprets a CondC
+proc interpCond(ifCond : ExprC, thenCond : ExprC, elseCond : ExprC, env : Env) : Value =
+   let interpedIf = interp(ifCond, env)
+   if interpedIf of BoolV:
+      if BoolV(interpedIf).b:
+         return interp(thenCond, env)
+      else:
+         return interp(elseCond, env)
+   else:
+      echo "If branch of condition does not evaluate to a boolean!"
+      return nil
 
 # Beginning of the interp function
 proc interp(exp : ExprC, env : Env = top_env) : Value =
@@ -114,7 +125,7 @@ assert(not BoolV(interp(Boolv(b: false))).b)
 var args0: seq[NumV]
 args0 = @[NumV(num: 1), NumV(num: 2)]
 let app0 = AppC(fun: IdC(sym: "+"), args: @[(ExprC)NumV(num: 1),(ExprC)NumV(num: 2)])
-echo ((NumV)interpApp(app0.fun, app0.args, top_env)).num
+echo (interpApp(app0.fun, app0.args, top_env) == nil)
 
 # (NumV)interp(app0, top_env).num == 3
 
