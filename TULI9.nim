@@ -88,6 +88,9 @@ assert(not BoolV(interp(Boolv(b: false))).b)
 let testSyms = @["a", "b", "c"]
 let testVals = @[NumV(num: 1), BoolV(b: true), NumV(num: 3)]
 let extendedEnv = extend(Env(next: nil, name: "root", val: StrV(str: "Begin")), testSyms, testVals)
+assert(lookup(extendedEnv, "nonexistant") == nil)
+assert(NumV(lookup(extendedEnv, "a")).num == 1)
+assert(StrV(lookup(extendedEnv, "root")).str == "Begin")
 
 # Env Lookup Test Cases
 let testEnv1 = Env(next: nil, name: "hello", val: BoolV(b : true))
