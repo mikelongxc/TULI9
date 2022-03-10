@@ -1,3 +1,8 @@
+
+import sugar
+
+#[ Type Definitions ]#
+
 # Typedef for a ExprC
 type
    ExprC = ref object of RootObj
@@ -32,7 +37,7 @@ type
       str: string
 
    PrimV = ref object of Value
-      op: proc
+      op: (seq[Value]) -> Value
 
 # Typedef for a Environment
 type
@@ -49,6 +54,8 @@ type
 # Let's create our top-env here
 let top_env = Env(next: nil, name: "+", val: nil)
 
+#[ Function Definitions ]#
+proc interp(exp : ExprC, env : Env = top_env) : Value
 
 # Lookup function utilizing our Env
 proc lookup(env : Env, sym : string) : Value =
@@ -68,6 +75,21 @@ proc extend(env : Env, syms : seq[string], vals : seq[Value]) : Env =
       let newEnv = Env(next: env, name: syms[0], val: vals[0])
       return extend(newEnv, syms[1..^1], vals[1..^1])
 
+# Interprets an AppC
+proc interpApp(body : ExprC, args : seq[ExprC], env : Env) : Value = 
+   var interpretedArgs: seq[Value]
+   for a in args:
+      interpretedArgs.add(interp(a, env))
+   
+   var interpretedBody: Value
+   interpretedBody = interp(body, env)
+
+   if interpretedBody of PrimV:
+      var fnBody: (seq[Value]) -> Value
+      fnBody = PrimV(interpretedBody).op
+      return fnBody(interpretedArgs)
+
+
 # Beginning of the interp function
 proc interp(exp : ExprC, env : Env = top_env) : Value =
    if exp of NumV:
@@ -78,6 +100,9 @@ proc interp(exp : ExprC, env : Env = top_env) : Value =
       return StrV(exp)
    elif exp of IdC:
       return lookup(env, IdC(exp).sym)
+   elif exp of AppC:
+      return interpApp(AppC(exp).fun, AppC(exp).args, env)
+
 
 # Interp Test Cases
 assert(NumV(interp(NumV(num: 5))).num == 5)
