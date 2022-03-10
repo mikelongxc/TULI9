@@ -5,6 +5,8 @@ type
 
 # Beginning of the interp function
 proc interp(exp: int) : NumV =
-   NumV(num: exp)
+   case exp
+      of 5: return NumV(num: exp)
+      else: echo "Not a valid type!"
 
 echo interp(5)
