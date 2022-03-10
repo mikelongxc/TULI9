@@ -18,9 +18,6 @@ type
       parms: array
       body: ExprC
 
-type
-   Env = ref object of RootObj
-
 # Typedef for a Value
 type
    Value = ref object of ExprC
@@ -28,19 +25,22 @@ type
    NumV = ref object of Value
       num: int
 
-   StrV = ref object of Value
-      str: string
-
    BoolV = ref object of Value
       b: bool
+
+   PrimV = ref object of Value
+      op: proc
+
+type
+   Env = ref object of RootObj
+      next: Env
+      name: string
+      val: Value
 
    CloV = ref object of Value
       parms: array
       body: ExprC
       env: Env
-
-   PrimV = ref object of Value
-      op: proc
 
 
 # Beginning of the interp function
@@ -49,11 +49,8 @@ proc interp(exp : ExprC, env : Env = Env()) : Value =
       return NumV(exp)
    elif exp of BoolV:
       return BoolV(exp)
-   elif exp of StrV:
-      return StrV(exp)
 
 # Test Cases
 assert(NumV(interp(NumV(num: 5))).num == 5)
 assert(BoolV(interp(Boolv(b: true))).b)
 assert(not BoolV(interp(Boolv(b: false))).b)
-assert(StrV(interp(StrV(str: "Hello World"))).str == "Hello World")
