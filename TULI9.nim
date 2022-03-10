@@ -18,14 +18,6 @@ type
       parms: array
       body: ExprC
 
-# Typedef for a Environment
-type
-   Env = ref object of RootObj
-      next: Env
-      name: string
-      val: Value
-
-
 # Typedef for a Value
 type
    Value = ref object of ExprC
@@ -42,32 +34,20 @@ type
    PrimV = ref object of Value
       op: proc
 
+# Typedef for a Environment
+type
+   Env = ref object of RootObj
+      next: Env
+      name: string
+      val: Value
+
    CloV = ref object of Value
       parms: array
       body: ExprC
       env: Env
 
-   NullV = ref object of Value
-
-
-
-
-# Beginning of the interp function
-proc interp(exp : ExprC, env : Env) : Value =
-   if exp of NumV:
-      return NumV(exp)
-   elif exp of BoolV:
-      return BoolV(exp)
-   elif exp of StrV:
-      return StrV(exp)
-   elif exp of IdC:
-      return LookupEnv(env, IdC(exp))
-   elif exp of AppC:
-      return NullV()
-   elif exp of CondC:
-      return NullV()
-   elif exp of LamC:
-      return NullV()
+# Let's create our top-env here
+let top_env = Env(next: nil, name: "+", val: nil)
 
 # Lookup function utilizing our Env
 proc lookup(env : Env, sym : string) : Value =
@@ -78,6 +58,17 @@ proc lookup(env : Env, sym : string) : Value =
    else:
       return nil
 
+# Beginning of the interp function
+proc interp(exp : ExprC, env : Env = top_env) : Value =
+   if exp of NumV:
+      return NumV(exp)
+   elif exp of BoolV:
+      return BoolV(exp)
+   elif exp of StrV:
+      return StrV(exp)
+   elif exp of IdC:
+      return lookup(env, IdC(exp).sym)
+
 # Interp Test Cases
 assert(NumV(interp(NumV(num: 5))).num == 5)
 assert(BoolV(interp(Boolv(b: true))).b)
@@ -87,3 +78,5 @@ assert(not BoolV(interp(Boolv(b: false))).b)
 let testEnv1 = Env(next: nil, name: "hello", val: BoolV(b : true))
 assert(BoolV(lookup(testEnv1, "hello")).b)
 assert(lookup(testEnv1, "nonexistant") == nil)
+let testEnv2 = Env(next: testEnv1, name: "world", val: NumV(num : 5))
+assert(BoolV(lookup(testEnv2, "hello")).b)
