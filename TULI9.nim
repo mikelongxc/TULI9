@@ -109,6 +109,16 @@ assert(NumV(interp(NumV(num: 5))).num == 5)
 assert(BoolV(interp(Boolv(b: true))).b)
 assert(not BoolV(interp(Boolv(b: false))).b)
 
+# (AppC (IdC '+) (list (NumV 1) (NumV 2)))
+
+var args0: seq[NumV]
+args0 = @[NumV(num: 1), NumV(num: 2)]
+let app0 = AppC(fun: IdC(sym: "+"), args: @[(ExprC)NumV(num: 1),(ExprC)NumV(num: 2)])
+echo ((NumV)interpApp(app0.fun, app0.args, top_env)).num
+
+# (NumV)interp(app0, top_env).num == 3
+
+
 # Env Extend Test Cases
 let testSyms = @["a", "b", "c"]
 let testVals = @[NumV(num: 1), BoolV(b: true), NumV(num: 3)]
